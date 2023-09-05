@@ -1,7 +1,26 @@
+require 'rest-client'
 class WebhookNotifier
   def self.send_notification(url, datum)
-    # Send HTTP POST request to webhook URL with data
-    # Implement the sending logic using libraries like RestClient or HTTParty
+    begin
+      response = RestClient.post(url, data.to_json, headers: { content_type: :json, accept: :json })
+
+      if response.code == 200
+        # Successfully sent the notification
+        return true
+      else
+        # Handle the case where the webhook endpoint returned an unexpected status code
+        Rails.logger.error("Webhook request failed with status code #{response.code}")
+        return false
+      end
+      rescue RestClient::ExceptionWithResponse => e
+      # Handle RestClient errors (e.g., connection errors, timeout)
+      Rails.logger.error("RestClient error: #{e.message}")
+      return false
+    rescue StandardError => e
+      # Handle other errors
+      Rails.logger.error("Error: #{e.message}")
+      return false
+    end
   end
 
   def self.verify_request(headers, body)

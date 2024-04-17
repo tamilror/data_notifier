@@ -25,4 +25,11 @@ module DataNotifier
       # Add more endpoints as needed
     ]  
 end
+def notify_webhooks(datum)
+  webhook_urls = Rails.application.config.webhook_urls || []
+  webhook_urls.each do |url|
+    WebhookNotifier.send_notification(url, datum)
+  end  
+end
+
 end
